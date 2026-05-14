@@ -372,7 +372,7 @@ function sendChat(){
   input.value='';
   body.scrollTop=body.scrollHeight;
   setTimeout(()=>{
-    const r=['Ho analizzato la tua richiesta. Posso aiutarti con la gestione delle prenotazioni.','Per ottimizzare la flotta, verifica l'occupazione nella sezione Reportistica.','Ho trovato 3 prenotazioni attive per questo cliente.','L'AI può aiutarti a estrarre dati dai documenti caricati.','Per le controversie, verifica lo stato del sinistro nella sezione apposita.'];
+    const r=['Ho analizzato la tua richiesta. Posso aiutarti con la gestione delle prenotazioni.','Per ottimizzare la flotta, verifica l\'occupazione nella sezione Reportistica.','Ho trovato 3 prenotazioni attive per questo cliente.','L\'AI può aiutarti a estrarre dati dai documenti caricati.','Per le controversie, verifica lo stato del sinistro nella sezione apposita.'];
     body.innerHTML+=`<div class="chat-message ai">${r[Math.floor(Math.random()*r.length)]}</div>`;
     body.scrollTop=body.scrollHeight;
   },800);
