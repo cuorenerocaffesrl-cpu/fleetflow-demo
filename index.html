@@ -172,6 +172,21 @@ tr:last-child td{border-bottom:none}
 .flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-4{gap:16px}.mt-4{margin-top:16px}.mb-4{margin-bottom:16px}.hidden{display:none !important}
 .chart-placeholder{height:200px;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:13px}
 .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;flex-shrink:0}
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+.vehicle-card{background:var(--card-bg);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+.vehicle-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.vehicle-card-header{height:8px;background:linear-gradient(90deg,var(--accent),#8b5cf6)}
+.vehicle-card-header.active{background:linear-gradient(90deg,var(--success),#10b981)}
+.vehicle-card-header.maintenance{background:linear-gradient(90deg,var(--danger),#ef4444)}
+.vehicle-card-body{padding:20px;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.vehicle-card-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:28px;background:#f1f5f9}
+.vehicle-card-plate{font-family:'Courier New',monospace;font-size:13px;font-weight:700;background:var(--text-primary);color:#fff;padding:3px 8px;border-radius:4px;margin-bottom:8px}
+.vehicle-card-model{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.vehicle-card-meta{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+.vehicle-card-details{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin-bottom:12px}
+.vehicle-card-detail{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px}
+.vehicle-card-detail strong{color:var(--text-primary);font-weight:600}
+.vehicle-card-footer{padding:12px 16px;background:#f8fafc;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 <body>
@@ -326,7 +341,7 @@ const icons={
   'bar-chart':'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
   'settings':'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'
 };
-let currentPage='dashboard',sidebarCollapsed=false,chatOpen=false;
+let currentPage='dashboard',sidebarCollapsed=false,chatOpen=false,currentModalType='';
 document.addEventListener('DOMContentLoaded',()=>{renderSidebar();navigateTo('dashboard');});
 function renderSidebar(){
   const nav=document.getElementById('nav-section');
@@ -378,6 +393,7 @@ function sendChat(){
   },800);
 }
 function openModal(type){
+  currentModalType=type;
   const overlay=document.getElementById('modal-overlay');
   const title=document.getElementById('modal-title');
   const body=document.getElementById('modal-body');
@@ -394,13 +410,45 @@ function openModal(type){
     <div id="tab-dettagli" class="tab-content"><div class="form-row"><div class="form-group"><label class="form-label">Km Partenza</label><input type="number" class="form-input" value="45000"></div><div class="form-group"><label class="form-label">Carburante</label><select class="form-select"><option>Pieno</option><option>3/4</option><option>1/2</option><option>1/4</option></select></div></div><div class="form-group"><label class="form-label">Note</label><textarea class="form-input" rows="3" placeholder="Note interne..."></textarea></div></div>
     <div id="tab-servizi" class="tab-content"><div style="display:flex;flex-direction:column;gap:8px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked> GPS Navigatore (+&#8364;15)</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> Seggiolino bambino (+&#8364;25)</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> Assicurazione completa (+&#8364;45)</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> Conducente aggiuntivo (+&#8364;35)</label></div></div>
     <div id="tab-anagrafica" class="tab-content"><div class="form-row"><div class="form-group"><label class="form-label">Cognome</label><input type="text" class="form-input" placeholder="Cognome"></div><div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" placeholder="Nome"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="email@esempio.it"></div><div class="form-group"><label class="form-label">Telefono</label><input type="tel" class="form-input" placeholder="+39 333 1234567"></div></div><div class="form-group"><label class="form-label">Patente</label><input type="text" class="form-input" placeholder="Numero patente"></div></div>`;
+  } else if(type==='new-vehicle'){
+    body.innerHTML=`<div class="form-row"><div class="form-group"><label class="form-label">Targa *</label><input type="text" class="form-input" id="nv-plate" placeholder="AB123CD"></div><div class="form-group"><label class="form-label">Modello *</label><input type="text" class="form-input" id="nv-model" placeholder="Es. Fiat 500"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="nv-type"><option>AUTOMOBILI</option><option>FURGONI</option><option>MOTO</option></select></div><div class="form-group"><label class="form-label">Categoria</label><select class="form-select" id="nv-category"><option>Utilitaria</option><option>Berlina</option><option>SUV</option><option>Furgone</option><option>Moto</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Alimentazione</label><select class="form-select" id="nv-fuel"><option>Benzina</option><option>Diesel</option><option>Ibrida</option><option>Elettrica</option><option>GPL</option><option>Metano</option></select></div><div class="form-group"><label class="form-label">Cambio</label><select class="form-select" id="nv-transmission"><option>Manuale</option><option>Automatico</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Stato</label><select class="form-select" id="nv-status"><option>Attivo</option><option>In Manutenzione</option></select></div><div class="form-group"><label class="form-label">Km Attuali</label><input type="number" class="form-input" id="nv-km" value="0"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Sede</label><select class="form-select" id="nv-location"><option>Milano Centrale</option><option>Roma Termini</option></select></div><div class="form-group"><label class="form-label">Proprietario</label><input type="text" class="form-input" id="nv-owner" placeholder="Proprietario A"></div></div>`;
   } else if(type==='notifications'){
     body.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px"><div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:var(--radius);border-left:3px solid var(--warning)"><div style="font-weight:600">Revisione Mercedes in scadenza</div><div style="font-size:12px;color:var(--text-secondary)">Targa IJ789KL - Scade tra 5 giorni</div></div><div style="padding:12px;background:rgba(239,68,68,0.08);border-radius:var(--radius);border-left:3px solid var(--danger)"><div style="font-weight:600">Firma digitale scaduta</div><div style="font-size:12px;color:var(--text-secondary)">Prenotazione #102 - Bianchi Laura</div></div><div style="padding:12px;background:rgba(59,130,246,0.08);border-radius:var(--radius);border-left:3px solid var(--accent)"><div style="font-weight:600">Nuovo lead da Booking Engine</div><div style="font-size:12px;color:var(--text-secondary)">Verdi Giovanni - Richiesta furgone</div></div></div>`;
   } else { body.innerHTML='<p>Form in sviluppo...</p>'; }
   overlay.classList.add('active');
 }
 function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal-overlay').classList.remove('active');}
-function saveModal(){showToast('success','Salvataggio completato!');closeModal();}
+function saveModal(){
+  if(currentModalType==='new-vehicle'){
+    const plate=document.getElementById('nv-plate').value.trim();
+    const model=document.getElementById('nv-model').value.trim();
+    if(!plate||!model){showToast('error','Targa e Modello sono obbligatori');return;}
+    const newVehicle={
+      id:Math.max(...mockData.vehicles.map(v=>v.id))+1,
+      plate:plate.toUpperCase(),
+      model:model,
+      type:document.getElementById('nv-type').value,
+      category:document.getElementById('nv-category').value,
+      fuel:document.getElementById('nv-fuel').value,
+      transmission:document.getElementById('nv-transmission').value,
+      status:document.getElementById('nv-status').value,
+      km:parseInt(document.getElementById('nv-km').value)||0,
+      location:document.getElementById('nv-location').value,
+      owner:document.getElementById('nv-owner').value.trim()||'Proprietario A'
+    };
+    mockData.vehicles.push(newVehicle);
+    showToast('success','Veicolo aggiunto correttamente!');
+    closeModal();
+    navigateTo('vehicles-list');
+  } else {
+    showToast('success','Salvataggio completato!');
+    closeModal();
+  }
+}
 function switchTab(tab,contentId){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));tab.classList.add('active');document.getElementById(contentId).classList.add('active');}
 function showToast(type,message){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast '+type;t.innerHTML='<span>'+(type==='success'?'&#9989;':type==='error'?'&#10060;':'&#8505;')+'</span><span>'+message+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000);}
 function showNotifications(){openModal('notifications');}
@@ -451,8 +499,40 @@ function renderBookings(container){
 }
 function renderVehicles(container){
   const vehicles=mockData.vehicles;
+  const typeCounts={};
+  vehicles.forEach(v=>{typeCounts[v.type]=(typeCounts[v.type]||0)+1});
+  const kpiCards=Object.entries(typeCounts).map(([type,count])=>{
+    const icon=type==='MOTO'?'&#127949;':type==='FURGONI'?'&#128666;':'&#128663;';
+    return `<div class="kpi-card" style="padding:16px"><div class="kpi-header"><div class="kpi-label">${type}</div><div class="kpi-icon blue" style="font-size:20px">${icon}</div></div><div class="kpi-value" style="font-size:22px">${count}</div></div>`;
+  }).join('');
+  const cardGrid=vehicles.map(v=>{
+    const statusClass=v.status==='Attivo'?'active':v.status==='In Manutenzione'?'maintenance':'active';
+    const icon=v.type==='MOTO'?'&#127949;':v.type==='FURGONI'?'&#128666;':'&#128663;';
+    return `<div class="vehicle-card">
+      <div class="vehicle-card-header ${statusClass}"></div>
+      <div class="vehicle-card-body">
+        <div class="vehicle-card-icon">${icon}</div>
+        <div class="vehicle-card-plate">${v.plate}</div>
+        <div class="vehicle-card-model">${v.model}</div>
+        <div class="vehicle-card-meta">${v.type} &bull; ${v.category} &bull; ${v.fuel}</div>
+        <div class="vehicle-card-details">
+          <div class="vehicle-card-detail"><span>&#128269;</span><strong>${v.transmission}</strong></div>
+          <div class="vehicle-card-detail"><span>&#128197;</span><strong>${v.km.toLocaleString()} km</strong></div>
+          <div class="vehicle-card-detail"><span>&#128205;</span>${v.location}</div>
+          <div class="vehicle-card-detail"><span>&#128100;</span>${v.owner}</div>
+        </div>
+        <span class="status-badge ${v.status==='Attivo'?'status-confirmed':v.status==='In Manutenzione'?'status-danger':'status-active'}">${v.status}</span>
+      </div>
+      <div class="vehicle-card-footer">
+        <button class="btn-icon" onclick="showToast('info','Visualizza ${v.plate}')" title="Visualizza">&#128065;</button>
+        <button class="btn-icon" onclick="showToast('info','Modifica ${v.plate}')" title="Modifica">&#9999;</button>
+      </div>
+    </div>`;
+  }).join('');
   container.innerHTML=`<div class="page-header"><div><div class="page-title">Parco Veicoli</div><div class="page-subtitle">Gestione flotta e disponibilità</div></div><div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="exportVehicles()">Export</button><button class="btn btn-primary btn-sm" onclick="openModal('new-vehicle')">+ Nuovo Veicolo</button></div></div>
-  <div class="card"><div class="card-header"><div class="card-title">Lista Veicoli</div><div style="display:flex;gap:8px"><input type="text" placeholder="Cerca targa o modello..." class="form-input" style="width:200px"><select class="form-select" style="width:140px"><option>Tutti i tipi</option><option>AUTOMOBILI</option><option>FURGONI</option><option>MOTO</option></select><select class="form-select" style="width:140px"><option>Tutti gli stati</option><option>Attivo</option><option>In Manutenzione</option></select></div></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px">${kpiCards}<div class="kpi-card" style="padding:16px"><div class="kpi-header"><div class="kpi-label">Totale Flotta</div><div class="kpi-icon green" style="font-size:20px">&#128227;</div></div><div class="kpi-value" style="font-size:22px">${vehicles.length}</div></div></div>
+  <div class="vehicle-grid">${cardGrid}</div>
+  <div class="card"><div class="card-header"><div class="card-title">Dettaglio Veicoli</div><div style="display:flex;gap:8px"><input type="text" placeholder="Cerca targa o modello..." class="form-input" style="width:200px"><select class="form-select" style="width:140px"><option>Tutti i tipi</option><option>AUTOMOBILI</option><option>FURGONI</option><option>MOTO</option></select><select class="form-select" style="width:140px"><option>Tutti gli stati</option><option>Attivo</option><option>In Manutenzione</option></select></div></div>
   <div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>ID</th><th>Targa</th><th>Modello</th><th>Tipo</th><th>Categoria</th><th>Alimentazione</th><th>Km</th><th>Stato</th><th>Sede</th><th>Azioni</th></tr></thead><tbody>${vehicles.map(v=>`<tr><td class="font-mono">${v.id}</td><td><span class="vehicle-plate">${v.plate}</span></td><td><strong>${v.model}</strong></td><td>${v.type}</td><td>${v.category}</td><td>${v.fuel}</td><td>${v.km.toLocaleString()}</td><td><span class="status-badge ${v.status==='Attivo'?'status-confirmed':v.status==='In Manutenzione'?'status-danger':'status-active'}">${v.status}</span></td><td>${v.location}</td><td><button class="btn-icon" onclick="showToast('info','Visualizza ${v.plate}')">&#128065;</button><button class="btn-icon" onclick="showToast('info','Modifica ${v.plate}')">&#9999;</button></td></tr>`).join('')}</tbody></table></div></div>
   <div class="card-footer"><span style="font-size:12px;color:var(--text-secondary)">Totale: ${vehicles.length} veicoli</span><div style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary">&lt;</button><button class="btn btn-sm btn-secondary">1</button><button class="btn btn-sm btn-secondary">&gt;</button></div></div></div>`;
 }
