@@ -187,6 +187,14 @@ tr:last-child td{border-bottom:none}
 .vehicle-card-detail{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px}
 .vehicle-card-detail strong{color:var(--text-primary);font-weight:600}
 .vehicle-card-footer{padding:12px 16px;background:#f8fafc;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.invoice-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.invoice-row{display:grid;grid-template-columns:2fr 80px 100px 70px 100px 36px;gap:8px;align-items:center;background:#f8fafc;padding:8px;border-radius:var(--radius);border:1px solid var(--border)}
+.invoice-row input,.invoice-row select{padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:#fff;width:100%}
+.invoice-row input:focus,.invoice-row select:focus{outline:none;border-color:var(--accent)}
+.invoice-row .row-total{font-size:12px;font-weight:700;color:var(--text-primary);text-align:right}
+.invoice-totals{border-top:2px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.invoice-totals .tot-row{display:flex;gap:12px;font-size:13px}
+.invoice-totals .tot-row strong{width:100px;text-align:right}
 </style>
 </head>
 <body>
@@ -375,7 +383,7 @@ function navigateTo(page){
   const names={'dashboard':'Dashboard','planning':'Planning Gantt','bookings':'Prenotazioni','bookings-list':'Lista Prenotazioni','bookings-quotes':'Preventivi','bookings-cancelled':'Annullate','bookings-import':'Importa','vehicles':'Parco Veicoli','vehicles-list':'Veicoli','vehicles-types':'Tipi & Categorie','vehicles-models':'Modelli','vehicles-expirations':'Scadenze','vehicles-damages':'Report Danni','clients':'Anagrafiche','clients-list':'Clienti','clients-leads':'Lead','clients-blacklist':'Blacklist','invoices':'Fatture','invoices-list':'Fatture','invoices-proforma':'Pro Forma','invoices-credit':'Note di Credito','invoices-xml':'Fattura Elettronica','payments':'Pagamenti','payments-list':'Prima Nota','payments-methods':'Metodi Pagamento','payments-costs':'Voci Costo/Ricavo','calendar':'Calendario','rates':'Tariffe','rates-lists':'Listini','rates-packages':'Pacchetti','rates-dynamic':'Tariffazione Dinamica','marketing':'Marketing','marketing-templates':'Template','marketing-campaigns':'Campagne','marketing-coupons':'Coupon','reports':'Reportistica','reports-occupation':'Occupazione Flotta','reports-revenue':'Fatturato','reports-vehicles':'Performance Veicoli','settings':'Impostazioni','settings-company':'Dati Azienda','settings-users':'Utenti & Permessi','settings-places':'Sedi','settings-origins':'Origini'};
   document.getElementById('page-breadcrumb').textContent=names[page]||page;
   const c=document.getElementById('content');
-  switch(page){case 'dashboard':renderDashboard(c);break;case 'planning':renderPlanning(c);break;case 'bookings':case 'bookings-list':renderBookings(c);break;case 'vehicles':case 'vehicles-list':renderVehicles(c);break;case 'clients':case 'clients-list':renderClients(c);break;case 'invoices':case 'invoices-list':renderInvoices(c);break;case 'payments':case 'payments-list':renderPayments(c);break;case 'calendar':renderCalendar(c);break;case 'rates':case 'rates-lists':renderRates(c);break;case 'reports':case 'reports-occupation':renderReports(c);break;case 'settings':case 'settings-company':renderSettings(c);break;default:renderDashboard(c);}
+  switch(page){case 'dashboard':renderDashboard(c);break;case 'planning':renderPlanning(c);break;case 'bookings':case 'bookings-list':renderBookings(c);break;case 'vehicles':case 'vehicles-list':renderVehicles(c);break;case 'clients':case 'clients-list':renderClients(c);break;case 'invoices':case 'invoices-list':renderInvoices(c);break;case 'invoices-proforma':renderInvoices(c,'Pro Forma');break;case 'invoices-credit':renderInvoices(c,'Nota di Credito');break;case 'invoices-xml':renderInvoices(c,'xml');break;case 'payments':case 'payments-list':renderPayments(c);break;case 'calendar':renderCalendar(c);break;case 'rates':case 'rates-lists':renderRates(c);break;case 'reports':case 'reports-occupation':renderReports(c);break;case 'settings':case 'settings-company':renderSettings(c);break;default:renderDashboard(c);}
 }
 function toggleChat(){chatOpen=!chatOpen;document.getElementById('chat-panel').classList.toggle('open',chatOpen);document.getElementById('chat-toggle').style.display=chatOpen?'none':'flex';}
 function sendChat(){
@@ -416,6 +424,13 @@ function openModal(type){
     <div class="form-row"><div class="form-group"><label class="form-label">Alimentazione</label><select class="form-select" id="nv-fuel"><option>Benzina</option><option>Diesel</option><option>Ibrida</option><option>Elettrica</option><option>GPL</option><option>Metano</option></select></div><div class="form-group"><label class="form-label">Cambio</label><select class="form-select" id="nv-transmission"><option>Manuale</option><option>Automatico</option></select></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Stato</label><select class="form-select" id="nv-status"><option>Attivo</option><option>In Manutenzione</option></select></div><div class="form-group"><label class="form-label">Km Attuali</label><input type="number" class="form-input" id="nv-km" value="0"></div></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Sede</label><select class="form-select" id="nv-location"><option>Milano Centrale</option><option>Roma Termini</option></select></div><div class="form-group"><label class="form-label">Proprietario</label><input type="text" class="form-input" id="nv-owner" placeholder="Proprietario A"></div></div>`;
+  } else if(type==='new-invoice'){
+    const clientOptions=mockData.clients.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    body.innerHTML=`<div class="form-row"><div class="form-group"><label class="form-label">Tipo Documento</label><select class="form-select" id="ni-type"><option>Fattura Vendita</option><option>Pro Forma</option><option>Nota di Credito</option></select></div><div class="form-group"><label class="form-label">Stato</label><select class="form-select" id="ni-status"><option>Bozza</option><option>Da Pagare</option><option>Pagata</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Cliente</label><select class="form-select" id="ni-client">${clientOptions}</select></div><div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="ni-date" value="2026-05-14"></div></div>
+    <div class="form-group"><label class="form-label">Righe Documento</label><div class="invoice-rows" id="invoice-rows"><div class="invoice-row"><input type="text" placeholder="Descrizione" class="ni-desc"><input type="number" placeholder="Q.tà" class="ni-qty" value="1" min="1" oninput="updateInvoiceTotals()"><input type="number" placeholder="Prezzo" class="ni-price" value="0" oninput="updateInvoiceTotals()"><select class="ni-iva" onchange="updateInvoiceTotals()"><option value="22">22%</option><option value="10">10%</option><option value="5">5%</option><option value="0">0%</option></select><div class="row-total ni-rowtot">&#8364;0</div><button class="btn-icon" onclick="removeInvoiceRow(this)" style="color:var(--danger)">&#10005;</button></div></div><button class="btn btn-secondary btn-sm" onclick="addInvoiceRow()">+ Aggiungi Riga</button></div>
+    <div class="invoice-totals" id="invoice-totals"><div class="tot-row">Imponibile: <strong id="ni-imponibile">&#8364;0</strong></div><div class="tot-row">IVA: <strong id="ni-iva">&#8364;0</strong></div><div class="tot-row" style="font-size:16px;font-weight:700">Totale: <strong id="ni-totale">&#8364;0</strong></div></div>`;
+    setTimeout(updateInvoiceTotals,0);
   } else if(type==='notifications'){
     body.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px"><div style="padding:12px;background:rgba(245,158,11,0.08);border-radius:var(--radius);border-left:3px solid var(--warning)"><div style="font-weight:600">Revisione Mercedes in scadenza</div><div style="font-size:12px;color:var(--text-secondary)">Targa IJ789KL - Scade tra 5 giorni</div></div><div style="padding:12px;background:rgba(239,68,68,0.08);border-radius:var(--radius);border-left:3px solid var(--danger)"><div style="font-weight:600">Firma digitale scaduta</div><div style="font-size:12px;color:var(--text-secondary)">Prenotazione #102 - Bianchi Laura</div></div><div style="padding:12px;background:rgba(59,130,246,0.08);border-radius:var(--radius);border-left:3px solid var(--accent)"><div style="font-weight:600">Nuovo lead da Booking Engine</div><div style="font-size:12px;color:var(--text-secondary)">Verdi Giovanni - Richiesta furgone</div></div></div>`;
   } else { body.innerHTML='<p>Form in sviluppo...</p>'; }
@@ -423,7 +438,24 @@ function openModal(type){
 }
 function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal-overlay').classList.remove('active');}
 function saveModal(){
-  if(currentModalType==='new-vehicle'){
+  if(currentModalType==='new-invoice'){
+    const client=document.getElementById('ni-client').value;
+    const date=document.getElementById('ni-date').value;
+    const type=document.getElementById('ni-type').value;
+    const status=document.getElementById('ni-status').value;
+    let total=0;
+    document.querySelectorAll('#invoice-rows .invoice-row').forEach(row=>{
+      const q=parseFloat(row.querySelector('.ni-qty').value)||0;
+      const p=parseFloat(row.querySelector('.ni-price').value)||0;
+      const v=parseFloat(row.querySelector('.ni-iva').value)||0;
+      total+=q*p*(1+v/100);
+    });
+    const newId='F-2026-'+(mockData.invoices.length+1).toString().padStart(3,'0');
+    mockData.invoices.push({id:newId,type:type,client:client,amount:Math.round(total),date:date,status:status,sdi:status==='Bozza'?'N/A':'Da Inviare'});
+    showToast('success','Documento creato: '+newId);
+    closeModal();
+    renderInvoices(document.getElementById('content'));
+  } else if(currentModalType==='new-vehicle'){
     const plate=document.getElementById('nv-plate').value.trim();
     const model=document.getElementById('nv-model').value.trim();
     if(!plate||!model){showToast('error','Targa e Modello sono obbligatori');return;}
@@ -543,12 +575,19 @@ function renderClients(container){
   <div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>ID</th><th>Nome</th><th>Tipo</th><th>CF/P.IVA</th><th>Telefono</th><th>Email</th><th>Citt&agrave;</th><th>Pren.</th><th>Azioni</th></tr></thead><tbody>${clients.map(c=>`<tr><td class="font-mono">${c.id}</td><td><strong>${c.name}</strong></td><td><span class="status-badge ${c.type==='Azienda'?'status-active':'status-open'}">${c.type}</span></td><td>${c.cf}${c.piva?'<br><small>P.IVA: '+c.piva+'</small>':''}</td><td>${c.phone}</td><td>${c.email}</td><td>${c.city}</td><td><span class="vehicle-plate" style="background:var(--accent)">${c.bookings}</span></td><td><button class="btn-icon" onclick="showToast('info','Visualizza ${c.name}')">&#128065;</button><button class="btn-icon" onclick="showToast('info','Modifica ${c.name}')">&#9999;</button></td></tr>`).join('')}</tbody></table></div></div>
   <div class="card-footer"><span style="font-size:12px;color:var(--text-secondary)">Totale: ${clients.length} clienti</span><div style="display:flex;gap:4px"><button class="btn btn-sm btn-secondary">&lt;</button><button class="btn btn-sm btn-secondary">1</button><button class="btn btn-sm btn-secondary">&gt;</button></div></div></div>`;
 }
-function renderInvoices(container){
+function renderInvoices(container,filter='all'){
   const invoices=mockData.invoices;
-  const totalAmount=invoices.reduce((sum,i)=>sum+i.amount,0);
-  container.innerHTML=`<div class="page-header"><div><div class="page-title">Fatture</div><div class="page-subtitle">Gestione documenti fiscali</div></div><div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="exportInvoices()">Export</button><button class="btn btn-primary btn-sm" onclick="showToast('info','Nuova fattura')">+ Nuova Fattura</button></div></div>
-  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"><div class="kpi-card" style="padding:16px"><div class="kpi-label">Imponibile</div><div class="kpi-value" style="font-size:20px">&#8364;${(totalAmount*0.78).toFixed(0)}</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Totale IVA</div><div class="kpi-value" style="font-size:20px">&#8364;${totalAmount.toLocaleString()}</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Versato</div><div class="kpi-value" style="font-size:20px;color:var(--success)">&#8364;1,590</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Da Versare</div><div class="kpi-value" style="font-size:20px;color:var(--danger)">&#8364;990</div></div></div>
-  <div class="card"><div class="card-header"><div class="card-title">Lista Fatture</div></div><div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>ID</th><th>Tipo</th><th>Cliente</th><th>Importo</th><th>Data</th><th>Stato</th><th>SDI</th><th>Azioni</th></tr></thead><tbody>${invoices.map(i=>`<tr><td class="font-mono">${i.id}</td><td><span class="status-badge ${i.type==='Fattura Vendita'?'status-confirmed':i.type==='Pro Forma'?'status-warning':'status-danger'}">${i.type}</span></td><td>${i.client}</td><td><strong>&#8364;${i.amount.toLocaleString()}</strong></td><td>${i.date}</td><td><span class="status-badge ${i.status==='Pagata'?'status-confirmed':i.status==='Da Pagare'?'status-warning':i.status==='Bozza'?'status-open':'status-closed'}">${i.status}</span></td><td>${i.sdi}</td><td><button class="btn-icon">&#128065;</button><button class="btn-icon">&#11015;</button></td></tr>`).join('')}</tbody></table></div></div></div>`;
+  let filtered=invoices;
+  let title='Fatture';
+  if(filter==='xml'){filtered=invoices.filter(i=>i.type==='Fattura Vendita');title='Fattura Elettronica';}
+  else if(filter!=='all'){filtered=invoices.filter(i=>i.type===filter);title=filter==='Pro Forma'?'Pro Forma':filter==='Nota di Credito'?'Note di Credito':'Fatture';}
+  const totalAmount=filtered.reduce((sum,i)=>sum+i.amount,0);
+  const paidAmount=filtered.filter(i=>i.status==='Pagata').reduce((sum,i)=>sum+i.amount,0);
+  const unpaidAmount=totalAmount-paidAmount;
+  const rows=filtered.map(i=>`<tr><td class="font-mono">${i.id}</td><td><span class="status-badge ${i.type==='Fattura Vendita'?'status-confirmed':i.type==='Pro Forma'?'status-warning':'status-danger'}">${i.type}</span></td><td>${i.client}</td><td><strong>&#8364;${i.amount.toLocaleString()}</strong></td><td>${i.date}</td><td><span class="status-badge ${i.status==='Pagata'?'status-confirmed':i.status==='Da Pagare'?'status-warning':i.status==='Bozza'?'status-open':'status-closed'}">${i.status}</span></td><td>${i.sdi}</td><td><button class="btn-icon" onclick="showToast('info','Visualizza ${i.id}')">&#128065;</button><button class="btn-icon" onclick="showToast('info','Download ${i.id}')">&#11015;</button></td></tr>`).join('');
+  container.innerHTML=`<div class="page-header"><div><div class="page-title">${title}</div><div class="page-subtitle">Gestione documenti fiscali</div></div><div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="exportInvoices()">Export</button><button class="btn btn-primary btn-sm" onclick="openModal('new-invoice')">+ Nuova Fattura</button></div></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px"><div class="kpi-card" style="padding:16px"><div class="kpi-label">Totale Documenti</div><div class="kpi-value" style="font-size:20px">&#8364;${totalAmount.toLocaleString()}</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Imponibile (stim.)</div><div class="kpi-value" style="font-size:20px">&#8364;${(totalAmount*0.78).toFixed(0)}</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Pagato</div><div class="kpi-value" style="font-size:20px;color:var(--success)">&#8364;${paidAmount.toLocaleString()}</div></div><div class="kpi-card" style="padding:16px"><div class="kpi-label">Da Pagare</div><div class="kpi-value" style="font-size:20px;color:var(--danger)">&#8364;${unpaidAmount.toLocaleString()}</div></div></div>
+  <div class="card"><div class="card-header"><div class="card-title">${title}</div><div style="display:flex;gap:8px"><select class="form-select" style="width:160px" onchange="renderInvoices(document.getElementById('content'),this.value==='Tutti'?'all':this.value)"><option ${filter==='all'?'selected':''}>Tutti</option><option ${filter==='Fattura Vendita'?'selected':''}>Fattura Vendita</option><option ${filter==='Pro Forma'?'selected':''}>Pro Forma</option><option ${filter==='Nota di Credito'?'selected':''}>Nota di Credito</option></select></div></div><div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>ID</th><th>Tipo</th><th>Cliente</th><th>Importo</th><th>Data</th><th>Stato</th><th>SDI</th><th>Azioni</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="text-center" style="padding:20px;color:var(--text-secondary)">Nessun documento</td></tr>'}</tbody></table></div></div></div>`;
 }
 function renderPayments(container){
   container.innerHTML=`<div class="page-header"><div><div class="page-title">Pagamenti</div><div class="page-subtitle">Prima nota e scadenze</div></div><div class="page-actions"><button class="btn btn-primary btn-sm">+ Nuovo Pagamento</button></div></div>
@@ -589,6 +628,35 @@ function renderSettings(container){
   <div id="tab-azienda" class="tab-content active"><div class="card"><div class="card-body"><div class="form-row"><div class="form-group"><label class="form-label">Ragione Sociale</label><input type="text" class="form-input" value="FleetFlow Rent SRL"></div><div class="form-group"><label class="form-label">Partita IVA</label><input type="text" class="form-input" value="12345678901"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Codice Fiscale</label><input type="text" class="form-input" value="FLTFNW26A01H501Z"></div><div class="form-group"><label class="form-label">Codice SDI</label><input type="text" class="form-input" value="ABC1234"></div></div><div class="form-group"><label class="form-label">Indirizzo</label><input type="text" class="form-input" value="Via Roma 123, 20121 Milano MI"></div><div class="form-row"><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" value="info@fleetflow.it"></div><div class="form-group"><label class="form-label">Telefono</label><input type="tel" class="form-input" value="+39 02 1234567"></div></div><div style="margin-top:16px"><button class="btn btn-primary" onclick="showToast('success','Dati salvati')">Salva</button></div></div></div></div>
   <div id="tab-utenti" class="tab-content"><div class="card"><div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>Nome</th><th>Email</th><th>Ruolo</th><th>Stato</th><th>2FA</th></tr></thead><tbody><tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="background:var(--accent)">MR</div><strong>Mario Rossi</strong></div></td><td>mario.rossi@fleetflow.it</td><td><span class="status-badge status-danger">Amministratore</span></td><td><span class="status-badge status-confirmed">Attivo</span></td><td>&#9989;</td></tr><tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="background:var(--success)">LB</div><strong>Laura Bianchi</strong></div></td><td>laura.bianchi@fleetflow.it</td><td><span class="status-badge status-open">Operatore</span></td><td><span class="status-badge status-confirmed">Attivo</span></td><td>&#10060;</td></tr></tbody></table></div></div></div></div>
   <div id="tab-sedi" class="tab-content"><div class="card"><div class="card-body" style="padding:0"><div class="table-container"><table><thead><tr><th>Nome</th><th>Indirizzo</th><th>Telefono</th><th>Orari</th><th>Veicoli</th></tr></thead><tbody><tr><td><strong>Milano Centrale</strong></td><td>Via Roma 123, 20121 Milano</td><td>+39 02 1234567</td><td>Lun-Sab 08-20</td><td>5</td></tr><tr><td><strong>Roma Termini</strong></td><td>Via Napoli 456, 00185 Roma</td><td>+39 06 7654321</td><td>Lun-Sab 08-20</td><td>3</td></tr></tbody></table></div></div></div></div>`;
+}
+function addInvoiceRow(){
+  const container=document.getElementById('invoice-rows');
+  const row=document.createElement('div');
+  row.className='invoice-row';
+  row.innerHTML=`<input type="text" placeholder="Descrizione" class="ni-desc"><input type="number" placeholder="Q.tà" class="ni-qty" value="1" min="1" oninput="updateInvoiceTotals()"><input type="number" placeholder="Prezzo" class="ni-price" value="0" oninput="updateInvoiceTotals()"><select class="ni-iva" onchange="updateInvoiceTotals()"><option value="22">22%</option><option value="10">10%</option><option value="5">5%</option><option value="0">0%</option></select><div class="row-total ni-rowtot">&#8364;0</div><button class="btn-icon" onclick="removeInvoiceRow(this)" style="color:var(--danger)">&#10005;</button>`;
+  container.appendChild(row);
+  updateInvoiceTotals();
+}
+function removeInvoiceRow(btn){
+  const rows=document.querySelectorAll('#invoice-rows .invoice-row');
+  if(rows.length>1){btn.closest('.invoice-row').remove();updateInvoiceTotals();}
+}
+function updateInvoiceTotals(){
+  let imp=0,iva=0;
+  document.querySelectorAll('#invoice-rows .invoice-row').forEach(row=>{
+    const q=parseFloat(row.querySelector('.ni-qty').value)||0;
+    const p=parseFloat(row.querySelector('.ni-price').value)||0;
+    const v=parseFloat(row.querySelector('.ni-iva').value)||0;
+    const rt=q*p;
+    const riva=rt*(v/100);
+    imp+=rt;
+    iva+=riva;
+    row.querySelector('.ni-rowtot').textContent='€'+(rt+riva).toFixed(0);
+  });
+  const tot=imp+iva;
+  const ni=document.getElementById('ni-imponibile');if(ni)ni.textContent='€'+imp.toFixed(0);
+  const nv=document.getElementById('ni-iva');if(nv)nv.textContent='€'+iva.toFixed(0);
+  const nt=document.getElementById('ni-totale');if(nt)nt.textContent='€'+tot.toFixed(0);
 }
 function refreshDashboard(){showToast('success','Dashboard aggiornata');renderDashboard(document.getElementById('content'));}
 function exportBookings(){showToast('success','Export prenotazioni completato');}
